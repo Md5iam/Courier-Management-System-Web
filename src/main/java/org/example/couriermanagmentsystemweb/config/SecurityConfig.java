@@ -34,7 +34,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/", "/register", "/employee/register", "/track", "/login",
                                 "/css/**", "/js/**", "/images/**", "/h2-console/**",
-                                "/api/auth/**", "/api/track/**", "/api/rates/**",
+                                "/api/auth/**", "/api/track/**", "/api/rates/**", "/api/health",
                                 "/favicon.ico", "/index.html", "/assets/**"
                         ).permitAll()
                         .requestMatchers("/api/user/**", "/user/**").hasRole("USER")

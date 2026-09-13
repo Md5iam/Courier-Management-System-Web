@@ -38,6 +38,26 @@ public class CourierApiController {
     private final TransactionService transactionService;
     private final PricingStrategy pricingStrategy;
 
+    // ==================== HEALTH / KEEPALIVE PING ====================
+
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> healthCheck() {
+        Map<String, Object> health = new HashMap<>();
+        try {
+            // Lightweight query to keep Aiven MySQL awake and reset inactivity timer
+            long total = courierService.countTotalCouriers();
+            health.put("status", "UP");
+            health.put("database", "CONNECTED");
+            health.put("totalCouriers", total);
+            return ResponseEntity.ok(health);
+        } catch (Exception e) {
+            log.error("Database health check ping failed: {}", e.getMessage());
+            health.put("status", "DOWN");
+            health.put("database", "DISCONNECTED: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(health);
+        }
+    }
+
     // ==================== PUBLIC TRACKING & RATES ====================
 
     @GetMapping("/track/{trackingNumber}")
