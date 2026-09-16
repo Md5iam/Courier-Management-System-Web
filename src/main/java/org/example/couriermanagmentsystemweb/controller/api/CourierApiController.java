@@ -40,20 +40,27 @@ public class CourierApiController {
 
     // ==================== HEALTH / KEEPALIVE PING ====================
 
-    @GetMapping("/health")
+    @RequestMapping(value = "/health", method = {RequestMethod.GET, RequestMethod.HEAD})
     public ResponseEntity<Map<String, Object>> healthCheck() {
         Map<String, Object> health = new HashMap<>();
+        long start = System.currentTimeMillis();
         try {
             // Lightweight query to keep Aiven MySQL awake and reset inactivity timer
             long total = courierService.countTotalCouriers();
+            long elapsed = System.currentTimeMillis() - start;
             health.put("status", "UP");
             health.put("database", "CONNECTED");
             health.put("totalCouriers", total);
+            health.put("latencyMs", elapsed);
+            health.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.ok(health);
         } catch (Exception e) {
-            log.error("Database health check ping failed: {}", e.getMessage());
+            long elapsed = System.currentTimeMillis() - start;
+            log.error("Database health check ping failed after {}ms: {}", elapsed, e.getMessage());
             health.put("status", "DOWN");
             health.put("database", "DISCONNECTED: " + e.getMessage());
+            health.put("latencyMs", elapsed);
+            health.put("timestamp", System.currentTimeMillis());
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(health);
         }
     }
